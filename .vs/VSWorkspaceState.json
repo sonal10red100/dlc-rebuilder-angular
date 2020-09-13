@@ -1,0 +1,12 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\images",
+    "\\src",
+    "\\src\\app",
+    "\\src\\app\\home",
+    "\\src\\app\\truth-table"
+  ],
+  "SelectedNode": "\\src\\app\\home\\home.component.ts",
+  "PreviewInSolutionExplorer": false
+}

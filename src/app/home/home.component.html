@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.js"
+          integrity="sha256–2z0P7MLoyxByUtvAk/xjkmindefS4auh4Pfzbm7y6g0"
+          crossorigin="anonymous">
+  </script>
+  <script>
+    function myFunction(iSrc) {
+      $.ajax({
+        url: "/join",
+        type: "POST",
+        data: { image: iSrc }
+      }).done(function (response) {
+        var html = "<br><br><p> <b> RESULT : <b><p>";
+        response = response.result;
+        $.each(response, function (key, val) {
+          console.log(val);
+          html += "<p>" + val + "<p>"
+        });
+        html += "<br>";
+        $(".comp_detected").append(html);
+      });
+    };
+  </script>
+</head>
+<body>
+
+  <nav class="navbar navbar-inverse navbar-expand">
+    <div class="container-fluid">
+      <div class="navbar">
+
+      </div>
+      <div class="collapse navbar-collapse" id="myNavbar">
+        <img src="assets/images/logo.png" style="width:50px;height:50px;">
+        <a class="navbar-brand" routerLink="/home">DLC Rebuilder</a>
+
+        <ul class="nav navbar-nav navbar-right">
+          <li class="active"><a href="#">Home</a></li>
+          <li><a routerLink="/about" routerLinkActive="active">About</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid text-center">
+    <div class="row content">
+
+      <div class="col-sm-3 sidenav">
+        <ul class="list-group" style="list-style-type:none">
+          <div style="border:dotted;border-radius:10px;border-color:darkslategrey">
+            <li>
+              <button class="list-group-item" style="margin-top:0px;text-align:center;"><b>Upload file</b><input type="file" accept="image/*" (change)="onFileChange($event)"></button>
+            </li>
+            <li>
+              <div style="margin-top:10px"><i><b>OR</b></i></div>
+              <button style="margin-top: 10px; text-align: center" class="list-group-item" (click)="capture_image();imageSrc=null"><b>Capture Image</b></button>
+            </li>
+          </div>
+          <li><button style="text-align:center" class="list-group-item detect_comp" (click)=" (imageSrc || cap_imagePath)?detectComponents():(no_detect=true) "><b>Detect Components</b></button></li>
+          <li><button style="text-align:center" class="list-group-item" (click)="popup = true"><b>Reconstruct Circuit</b></button></li>
+          <li><button style="text-align:center" class="list-group-item" (click)="r_imagePath?logical_expression():(no_rimage=true)"><b>Boolean Expression</b></button></li>
+          <!--<li><button style="text-align:center" class="list-group-item" (click)="boolean_exp? truth_table() :(no_exp=true)"><b>Truth Table</b></button></li>-->
+          <li><button style="text-align:center" class="list-group-item" (click)="boolean_exp?truth_table():no_exp=true"><b>Truth Table</b></button></li>
+          <li><button style="text-align:center" class="list-group-item" (click)="boolean_exp?open_in_logisim():no_open=true"><b>Open in Logisim</b></button></li>
+        </ul>
+      </div>
+      <div class="col-sm-8 text-left">
+        <div class="row">
+
+          <div class="col-md-3 col-lg-6 vcenter inp_sketch" style=" background: #DEDDDD;text-align:center;justify-content: center;
+  align-items: center; height: 260px; margin-top: 20px; margin-left: 20px;border: 3px solid black;">
+            <div *ngIf="!imageSrc && !cap_imagePath" style="margin-top:130px"><b>Input Sketch</b></div>
+            <div *ngIf="imageSrc || cap_imagePath" style="height:30px; width:430px;background:#282D73; color:white;padding:5px"><b>Input Sketch</b></div>
+            <img [src]="imageSrc" *ngIf="imageSrc && !cap_imagePath" style="height: 225px; width:400px; ">
+            <img [src]="cap_imagePath" *ngIf="cap_imagePath" style="height: 225px; width:400px; ">
+
+          </div>
+
+
+
+          <div class="col-md-6 col-lg-6 vcenter comp_detected" style=" background: #DEDDDD;text-align:center;justify-content: center;
+  align-items: center; height: 260px; margin-top: 20px; margin-left: 20px;border: 3px solid black;">
+            <div *ngIf="!imagePath" style="margin-top:130px"><b>Components Detected</b></div>
+            <div *ngIf="imagePath" style="height:30px; width:430px;background:#282D73; color:white;padding:5px"><b>Components Detected</b></div>
+            <img [src]="imagePath" *ngIf="imagePath && no_detection==false && flag==false" style="height: 225px; width:400px; ">
+          </div>
+        </div>
+
+
+      </div>
+      <div class="row">
+
+        <div *ngIf="!boolean_exp" style="width: 500px;
+    background: #DEDDDD;
+    position: absolute;
+    right: 20px;
+    margin-top: 20px;
+    border: 3px solid black;
+    padding: 10px;">
+          <div *ngIf="!boolean_exp"> <b>Boolean Expression</b></div>
+        </div>
+
+        <div *ngIf="boolean_exp" style="width: 500px;
+    background: #fff;
+    position: absolute;
+    right: 20px;
+    margin-top: 20px;
+    border: 3px solid black;
+    padding: 10px;">
+          <div *ngIf="boolean_exp" style="font-size:large"> <b>Boolean Expression : {{boolean_exp}}</b></div>
+        </div>
+
+
+        <div style="
+    width: 500px;
+    background: #DEDDDD;
+    position: absolute;
+    right: 20px;
+    height: 480px;
+    margin-top:80px;
+    border: 3px solid black;
+    padding: 10px;">
+          <div *ngIf="!r_imagePath" style="margin-top:200px"><b>Reconstructed Circuit</b></div>
+          <div *ngIf="r_imagePath" style="height:30px; width:470px; background:#282D73; color:white;padding:5px"><b>Reconstructed Circuit</b></div>
+          <img [src]="r_imagePath" *ngIf="r_imagePath" style="height: 430px; width:470px; ">
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" *ngIf="popup">
+    <div class="popup">
+      <h4><b>Confirm</b></h4>
+      <a class="close" (click)="popup = false">&times;</a>
+      <div class="content">
+        Are all the gates detected correctly?<br><br>
+        <button class="yes_btn" (click)="popup = false; reconstructCircuit()"><b>YES</b></button>
+        <button class="no_btn" (click)="popup = false; proceed=true"><b>NO</b></button>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" *ngIf="proceed">
+    <div class="popup" style="width:20%;">
+      <div class="content">
+        Please select the image again.<br><br>
+        <button style="background: #6BDE76; font-size: small; border-color: #fff; border-radius: 5px;" (click)="proceed = false"><b>OK</b></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" *ngIf="no_detect">
+    <div class="popup" style="width:20%;">
+      <div class="content">
+        Please select an image to proceed.<br><br>
+        <button style="background: #6BDE76; font-size: small; border-color: #fff; border-radius: 5px;" (click)="no_detect = false"><b>OK</b></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" *ngIf="missing_components">
+    <div class="popup" style="width:20%;">
+      <div class="content">
+        No components to reconstruct the circuit. <br>Please use another image.<br><br>
+        <button style="background: #6BDE76; font-size: small; border-color: #fff; border-radius: 5px;" (click)="missing_components = false"><b>OK</b></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" *ngIf="no_detection">
+    <div class="popup" style="width:20%;">
+      <div class="content">
+        No useful components detected. <br>Please use another image.<br><br>
+        <button style="background: #6BDE76; font-size: small; border-color: #fff; border-radius: 5px;" (click)="no_detection = false; flag=true;"><b>OK</b></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" *ngIf="no_rimage">
+    <div class="popup" style="width:20%;">
+      <div class="content">
+        Image is not reconstructed yet. <br>Please try again.<br><br>
+        <button style="background: #6BDE76; font-size: small; border-color: #fff; border-radius: 5px;" (click)="no_rimage = false"><b>OK</b></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" *ngIf="no_exp">
+    <div class="popup" style="width:30%;">
+      <div class="content">
+        No expression available to generate truth-table. <br>Please try again.<br><br>
+        <button style="background: #6BDE76; font-size: small; border-color: #fff; border-radius: 5px;" (click)="no_exp = false"><b>OK</b></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" *ngIf="truth_table_popup">
+    <div class="popup" style="margin-top:10px">
+      <div class="content" style="text-align:center">
+        <div>
+
+          <table class="table table-bordered table table-hover" *ngIf="cols==3">
+            <thead>
+              <tr>
+                <th>Sr. No.</th>
+                <th><b>a</b></th>
+                <th><b>b</b></th>
+                <th><b>{{ head.X }}</b></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let x of lst">
+                <td>{{x.id}}</td>
+                <td>{{x.a}}</td>
+                <td>{{x.b}}</td>
+                <td>{{x.X}}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <table class="table table-bordered table table-hover" *ngIf="cols==4">
+            <thead>
+              <tr>
+                <th>Sr. No.</th>
+                <th><b>a</b></th>
+                <th><b>b</b></th>
+                <th><b>c</b></th>
+                <th><b>{{ head.X }}</b></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let x of lst">
+                <td>{{x.id}}</td>
+                <td>{{x.a}}</td>
+                <td>{{x.b}}</td>
+                <td>{{x.c}}</td>
+                <td>{{x.X}}</td>
+
+              </tr>
+            </tbody>
+          </table>
+
+          <table class="table table-bordered table table-hover" *ngIf="cols==5">
+            <thead>
+              <tr>
+                <th>Sr. No.</th>
+                <th><b>a</b></th>
+                <th><b>b</b></th>
+                <th><b>c</b></th>
+                <th><b>d</b></th>
+                <th><b>{{ head.X }}</b></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let x of lst">
+                <td>{{x.id}}</td>
+                <td>{{x.a}}</td>
+                <td>{{x.b}}</td>
+                <td>{{x.c}}</td>
+                <td>{{x.d}}</td>
+                <td>{{x.X}}</td>
+              </tr>
+            </tbody>
+          </table>
+
+        </div>
+        <button style="background: #1E245F; font-size: medium;color:white; border-color: #fff; border-radius: 5px;" (click)="truth_table_popup = false"><b>OK</b></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" *ngIf="no_open">
+    <div class="popup" style="width:30%;">
+      <div class="content">
+        Circuit not yet reconstructed <br>Please try again.<br><br>
+        <button style="background: #6BDE76; font-size: small; border-color: #fff; border-radius: 5px;" (click)="no_open = false"><b>OK</b></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" *ngIf="lst_msg">
+    <div class="popup" style="width:30%;">
+      <div class="content">
+        {{msg}} <br>
+        <button style="background: #6BDE76; font-size: small; border-color: #fff; border-radius: 5px;" (click)="lst_msg = false"><b>OK</b></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" *ngIf="loading">
+    <div class="loadingio-spinner-double-ring-kbsu9bbhi1p" *ngIf="loading">
+      <div class="ldio-09dwpjk6gni9">
+        <div></div>
+        <div></div>
+        <div><div></div></div>
+        <div><div></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="overlay" *ngIf="loading_reconst">
+    <div class="loadingio-spinner-double-ring-kbsu9bbhi1p" *ngIf="loading_reconst">
+      <div class="ldio-09dwpjk6gni9">
+        <div></div>
+        <div></div>
+        <div><div></div></div>
+        <div><div></div></div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <div class="overlay" *ngIf="loading_open_in_logisim">
+    <div class="loadingio-spinner-double-ring-kbsu9bbhi1p" *ngIf="loading_open_in_logisim">
+      <div class="ldio-09dwpjk6gni9">
+        <div></div>
+        <div></div>
+        <div><div></div></div>
+        <div><div></div></div>
+      </div>
+    </div>
+
+  </div>
+</body>
+
+</html>
+<router-outlet></router-outlet>
